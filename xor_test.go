@@ -21,7 +21,13 @@ func TestXor(t *testing.T) {
 		c := x.Encrypt(b.key, b.clear)
 		for k := range b.cipher {
 			if c[k] != b.cipher[k] {
-				t.Errorf("expect byte %v at pos %d, got %v", b.cipher[k], k, c[k])
+				t.Errorf("encrypt: expect byte %v at pos %d, got %v", b.cipher[k], k, c[k])
+			}
+		}
+		d := x.Decrypt(b.key, b.cipher)
+		for k := range b.clear {
+			if d[k] != b.clear[k] {
+				t.Errorf("decrypt: expect byte %v at pos %d, got %v", b.clear[k], k, d[k])
 			}
 		}
 	}
