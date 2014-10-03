@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"crypto"
 )
 
 func main() {
@@ -28,15 +30,9 @@ func main() {
 	}
 	fmt.Println("KEY   ", string(key))
 
-	cipher := make([]byte, len(clear))
-	for k := 0; k < len(clear); k++ {
-		cipher[k] = 65 + (clear[k]+key[k])%26
-	}
+	cipher := encrypt([]byte(key), []byte(clear))
 	fmt.Println("CIPHER", string(cipher))
 
-	too := make([]byte, len(clear))
-	for k := 0; k < len(clear); k++ {
-		too[k] = 65 + (cipher[k]-key[k])%26
-	}
-	fmt.Println("CLEAR ", string(too))
+	plain := decrypt([]byte(key), cipher)
+	fmt.Println("CLEAR ", string(plain))
 }
