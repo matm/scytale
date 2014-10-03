@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"crypto"
+	"secret"
 )
 
 func main() {
@@ -15,6 +15,9 @@ func main() {
 	}
 	password := strings.ToUpper(os.Args[1])
 	clear := strings.ToUpper(os.Args[2])
+
+	v := secret.NewVigenere()
+
 	fmt.Println("CLEAR ", clear)
 
 	key := make([]byte, len(clear))
@@ -30,9 +33,9 @@ func main() {
 	}
 	fmt.Println("KEY   ", string(key))
 
-	cipher := encrypt([]byte(key), []byte(clear))
+	cipher := v.Encrypt([]byte(key), []byte(clear))
 	fmt.Println("CIPHER", string(cipher))
 
-	plain := decrypt([]byte(key), cipher)
+	plain := v.Decrypt([]byte(key), cipher)
 	fmt.Println("CLEAR ", string(plain))
 }
