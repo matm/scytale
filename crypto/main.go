@@ -38,4 +38,14 @@ func main() {
 
 	plain := v.Decrypt([]byte(key), cipher)
 	fmt.Println("CLEAR ", string(plain))
+
+	fmt.Print("\nXOR cipher\n")
+	x := secret.NewXor()
+	a := []byte{1, 2, 3, 5, 6, 7}
+	k := []byte{212, 16, 24, 32, 68, 44}
+	fmt.Println("CLEAR ", a)
+	fmt.Println("KEY   ", k)
+	z := x.Encrypt(k, a)
+	fmt.Println("CIPHER", z)
+	fmt.Println("CLEAR ", x.Decrypt(k, z))
 }
