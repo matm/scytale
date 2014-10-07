@@ -17,6 +17,7 @@ func main() {
 	passwd := []byte("mypasswd")
 	salt := []byte{1, 2, 3, 4, 5, 6, 7, 8}
 	key := pbkdf2.Key(passwd, salt, 4096, 32, sha1.New)
+	fmt.Printf("KEY  : %x [%d]\n", key, len(key))
 
 	plaintext := []byte("This is a crazy message, man")
 
@@ -40,7 +41,7 @@ func main() {
 	mode := cipher.NewCBCEncrypter(block, iv)
 	mode.CryptBlocks(ciphertext[aes.BlockSize:], plain)
 
-	fmt.Printf("PLAIN: %x [%d]\n", plaintext, len(plaintext))
+	fmt.Printf("PLAIN: %v [%d]\n", string(plaintext), len(plaintext))
 	fmt.Printf("CRYPT: %x [%d]\n", ciphertext, len(ciphertext))
 
 	// Decrypt
@@ -51,5 +52,5 @@ func main() {
 	// Remove padding
 	cnt := ciphertext[len(ciphertext)-1]
 	ciphertext = ciphertext[:len(ciphertext)-int(cnt)]
-	fmt.Printf("PLAIN: %x [%d]\n", ciphertext, len(ciphertext))
+	fmt.Printf("PLAIN: %v [%d]\n", string(ciphertext), len(ciphertext))
 }
