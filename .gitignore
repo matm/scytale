@@ -1,3 +1,4 @@
 *.swp
 bin/crypto/crypto
+bin/aesfile/aesfile
 tags
