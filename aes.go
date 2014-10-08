@@ -5,8 +5,8 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha1"
-	"fmt"
 	"io"
+	"os"
 
 	"code.google.com/p/go.crypto/pbkdf2"
 )
@@ -17,6 +17,9 @@ type AES struct {
 	mode      cipher.BlockMode
 	iv        []byte
 }
+
+// 2K buffer
+const bufLen = 2048
 
 // Strong AES encryption, with a cipher operating in CBC mode,
 // using a derived 256 bits key using PBKDF2.
@@ -29,7 +32,6 @@ func NewAES(password string) (*AES, error) {
 	}
 
 	key := pbkdf2.Key(passwd, salt, 4096, 32, sha1.New)
-	fmt.Printf("KEY  : %x [%d]\n", key, len(key))
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -71,13 +73,58 @@ func (a *AES) InitDecryption(iv []byte) {
 	a.mode = cipher.NewCBCDecrypter(a.block, iv)
 }
 
+// Decrypt decripts a block of ciphertext. You have to ensure
+// this ciphertext is a multiple of AES's block size.
 func (a *AES) Decrypt(ciphertext []byte) []byte {
 	a.mode.CryptBlocks(ciphertext, ciphertext)
 	return ciphertext
 }
 
+// RemovePadding removes extra padding for plain text.
 func (a *AES) RemovePadding(clear []byte) []byte {
 	cnt := clear[len(clear)-1]
 	clear = clear[:len(clear)-int(cnt)]
 	return clear
+}
+
+// EncryptFile encrypts infile and saves the resulting AES encoding
+// to outfile.
+func (a *AES) EncryptFile(infile, outfile string) error {
+	f, err := os.Open(infile)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	out, err := os.Create(outfile)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	buf := make([]byte, bufLen)
+
+	// Encrypt
+	iv, err := a.InitEncryption()
+	if err != nil {
+		return err
+	}
+	_, err = out.Write(iv)
+	if err != nil {
+		return err
+	}
+	end := false
+	for !end {
+		n, err := f.Read(buf)
+		if n == 0 && err == io.EOF {
+			end = true
+		}
+		if n < len(buf) {
+			buf = buf[:n]
+		}
+		_, err = out.Write(a.Encrypt(buf))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

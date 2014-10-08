@@ -3,28 +3,24 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"secret"
 )
 
 func main() {
-	a, err := secret.NewAES("mypasswd")
-	plaintext := []byte("This is a crazy message, man")
+	if len(os.Args) != 3 {
+		fmt.Printf("Usage: %s filename password\n", os.Args[0])
+		os.Exit(2)
+	}
+	name := os.Args[1]
+	a, err := secret.NewAES(os.Args[2])
 	if err != nil {
+		log.Fatal("AES init:", err)
+	}
+	out := name + ".crypt"
+	if err := a.EncryptFile(name, out); err != nil {
 		log.Fatal(err)
 	}
-	// Encrypt
-	iv, err := a.InitEncryption()
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("PLAIN: %v [%d]\n", string(plaintext), len(plaintext))
-	ciphertext := a.Encrypt(plaintext)
-	fmt.Printf("CRYPT: %x [%d]\n", ciphertext, len(ciphertext))
-
-	// Decrypt
-	a.InitDecryption(iv)
-	clear := a.Decrypt(ciphertext)
-	clear = a.RemovePadding(clear)
-	fmt.Printf("PLAIN: %v [%d]\n", string(clear), len(clear))
+	fmt.Println("Wrote to", out)
 }
