@@ -23,4 +23,10 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println("Wrote to", out)
+
+	clear := name + ".clear"
+	if err := a.DecryptFile(out, clear); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Wrote to", clear)
 }

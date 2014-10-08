@@ -5,6 +5,8 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha1"
+	"errors"
+	"fmt"
 	"io"
 	"os"
 
@@ -112,11 +114,10 @@ func (a *AES) EncryptFile(infile, outfile string) error {
 	if err != nil {
 		return err
 	}
-	end := false
-	for !end {
+	for {
 		n, err := f.Read(buf)
 		if n == 0 && err == io.EOF {
-			end = true
+			break
 		}
 		if n < len(buf) {
 			buf = buf[:n]
@@ -126,5 +127,51 @@ func (a *AES) EncryptFile(infile, outfile string) error {
 			return err
 		}
 	}
+	return nil
+}
+
+// DecryptFile decrypts infile and saves the resulting AES decoding
+// to outfile.
+func (a *AES) DecryptFile(infile, outfile string) error {
+	f, err := os.Open(infile)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	out, err := os.Create(outfile)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	buf := make([]byte, bufLen)
+
+	// Decrypt
+	iv := make([]byte, aes.BlockSize)
+	_, err = f.Read(iv)
+	if err != nil {
+		return errors.New(fmt.Sprintf("can't read IV: %s", err.Error()))
+	}
+	a.InitDecryption(iv)
+
+	for {
+		n, err := f.Read(buf)
+		if n == 0 && err == io.EOF {
+			break
+		}
+		var clear []byte
+		if n < len(buf) {
+			// Last block, remove extra padding
+			clear = a.Decrypt(buf[:n])
+			clear = a.RemovePadding(clear)
+		} else {
+			clear = a.Decrypt(buf)
+		}
+		_, err = out.Write(clear)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
