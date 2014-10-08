@@ -154,12 +154,12 @@ func (a *AES) DecryptFile(infile, outfile string) error {
 	}
 	a.InitDecryption(iv)
 
+	var clear []byte
 	for {
 		n, err := f.Read(buf)
 		if n == 0 && err == io.EOF {
 			break
 		}
-		var clear []byte
 		if n < len(buf) {
 			// Last block, remove extra padding
 			clear = a.Decrypt(buf[:n])
