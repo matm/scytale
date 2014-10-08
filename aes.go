@@ -18,11 +18,16 @@ type AES struct {
 	iv        []byte
 }
 
-// AES encryption
+// Strong AES encryption, with a cipher operating in CBC mode,
+// using a derived 256 bits key using PBKDF2.
 func NewAES(password string) (*AES, error) {
 	passwd := []byte(password)
-	// TODO: random salt
-	salt := []byte{1, 2, 3, 4, 5, 6, 7, 8}
+	// Use a random 16 bytes salt
+	salt := make([]byte, 16)
+	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
+		return nil, err
+	}
+
 	key := pbkdf2.Key(passwd, salt, 4096, 32, sha1.New)
 	fmt.Printf("KEY  : %x [%d]\n", key, len(key))
 
