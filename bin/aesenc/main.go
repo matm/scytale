@@ -31,7 +31,6 @@ func main() {
 		log.Fatal("missing output file name (use -o)")
 	}
 	name := flag.Arg(0)
-	fmt.Println("PWD", flag.Arg(1))
 	a, err := secret.NewAES(flag.Arg(1))
 	if err != nil {
 		log.Fatal("AES init:", err)
@@ -40,7 +39,6 @@ func main() {
 	var action func(name, output string) error
 	action = a.EncryptFile
 	if *decrypt {
-		fmt.Println("DEC")
 		action = a.DecryptFile
 	}
 
