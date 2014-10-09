@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -9,24 +10,42 @@ import (
 )
 
 func main() {
-	if len(os.Args) != 3 {
-		fmt.Printf("Usage: %s filename password\n", os.Args[0])
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: %s -o output input password\n", os.Args[0])
+		flag.PrintDefaults()
+	}
+	help := flag.Bool("h", false, "show help message")
+	decrypt := flag.Bool("d", false, "decrypt file")
+	output := flag.String("o", "", "output file name")
+	flag.Parse()
+
+	if *help {
+		flag.Usage()
 		os.Exit(2)
 	}
-	name := os.Args[1]
-	a, err := secret.NewAES(os.Args[2])
+	if len(flag.Args()) != 2 {
+		flag.Usage()
+		os.Exit(2)
+	}
+	if *output == "" {
+		log.Fatal("missing output file name (use -o)")
+	}
+	name := flag.Arg(0)
+	fmt.Println("PWD", flag.Arg(1))
+	a, err := secret.NewAES(flag.Arg(1))
 	if err != nil {
 		log.Fatal("AES init:", err)
 	}
-	out := name + ".crypt"
-	if err := a.EncryptFile(name, out); err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Wrote to", out)
 
-	clear := name + ".clear"
-	if err := a.DecryptFile(out, clear); err != nil {
+	var action func(name, output string) error
+	action = a.EncryptFile
+	if *decrypt {
+		fmt.Println("DEC")
+		action = a.DecryptFile
+	}
+
+	if err := action(name, *output); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Wrote to", clear)
+	fmt.Println("Wrote to", *output)
 }

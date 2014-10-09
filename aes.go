@@ -14,25 +14,34 @@ import (
 )
 
 type AES struct {
+	password  []byte
 	salt, key []byte
 	block     cipher.Block
 	mode      cipher.BlockMode
 	iv        []byte
 }
 
-// 2K buffer
-const bufLen = 2048
+const (
+	// 2K buffer
+	bufLen  = 2048
+	saltLen = 16
+)
 
 // Strong AES encryption, with a cipher operating in CBC mode,
 // using a derived 256 bits key using PBKDF2.
 func NewAES(password string) (*AES, error) {
 	passwd := []byte(password)
-	// Use a random 16 bytes salt
-	salt := make([]byte, 16)
+	// Use a random salt
+	salt := make([]byte, saltLen)
 	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
 		return nil, err
 	}
 
+	return deriveKey(passwd, salt)
+}
+
+// Derive a pseudo-random key depending on password and salt.
+func deriveKey(passwd, salt []byte) (*AES, error) {
 	key := pbkdf2.Key(passwd, salt, 4096, 32, sha1.New)
 
 	block, err := aes.NewCipher(key)
@@ -40,8 +49,7 @@ func NewAES(password string) (*AES, error) {
 		return nil, err
 	}
 
-	aes := &AES{salt: salt, key: key, block: block}
-
+	aes := &AES{password: passwd, salt: salt, key: key, block: block}
 	return aes, nil
 }
 
@@ -110,7 +118,12 @@ func (a *AES) EncryptFile(infile, outfile string) error {
 	if err != nil {
 		return err
 	}
+	// Write IV and salt
 	_, err = out.Write(iv)
+	if err != nil {
+		return err
+	}
+	_, err = out.Write(a.salt)
 	if err != nil {
 		return err
 	}
@@ -152,6 +165,17 @@ func (a *AES) DecryptFile(infile, outfile string) error {
 	if err != nil {
 		return errors.New(fmt.Sprintf("can't read IV: %s", err.Error()))
 	}
+	// Load salt
+	salt := make([]byte, saltLen)
+	_, err = f.Read(salt)
+	if err != nil {
+		return errors.New(fmt.Sprintf("can't read salt: %s", err.Error()))
+	}
+	aes, err := deriveKey(a.password, salt)
+	if err != nil {
+		return err
+	}
+	*a = *aes
 	a.InitDecryption(iv)
 
 	var clear []byte
