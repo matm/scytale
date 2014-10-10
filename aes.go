@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 
 	"code.google.com/p/go.crypto/pbkdf2"
 )
@@ -99,18 +98,7 @@ func (a *AES) RemovePadding(clear []byte) []byte {
 
 // EncryptFile encrypts infile and saves the resulting AES encoding
 // to outfile.
-func (a *AES) EncryptFile(infile, outfile string) error {
-	f, err := os.Open(infile)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	out, err := os.Create(outfile)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
+func (a *AES) EncryptFile(r io.Reader, w io.Writer) error {
 	buf := make([]byte, bufLen)
 
 	// Encrypt
@@ -119,23 +107,23 @@ func (a *AES) EncryptFile(infile, outfile string) error {
 		return err
 	}
 	// Write IV and salt
-	_, err = out.Write(iv)
+	_, err = w.Write(iv)
 	if err != nil {
 		return err
 	}
-	_, err = out.Write(a.salt)
+	_, err = w.Write(a.salt)
 	if err != nil {
 		return err
 	}
 	for {
-		n, err := f.Read(buf)
+		n, err := r.Read(buf)
 		if n == 0 && err == io.EOF {
 			break
 		}
 		if n < len(buf) {
 			buf = buf[:n]
 		}
-		_, err = out.Write(a.Encrypt(buf))
+		_, err = w.Write(a.Encrypt(buf))
 		if err != nil {
 			return err
 		}
@@ -145,29 +133,18 @@ func (a *AES) EncryptFile(infile, outfile string) error {
 
 // DecryptFile decrypts infile and saves the resulting AES decoding
 // to outfile.
-func (a *AES) DecryptFile(infile, outfile string) error {
-	f, err := os.Open(infile)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	out, err := os.Create(outfile)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
+func (a *AES) DecryptFile(r io.Reader, w io.Writer) error {
 	buf := make([]byte, bufLen)
 
 	// Decrypt
 	iv := make([]byte, aes.BlockSize)
-	_, err = f.Read(iv)
+	_, err := r.Read(iv)
 	if err != nil {
 		return errors.New(fmt.Sprintf("can't read IV: %s", err.Error()))
 	}
 	// Load salt
 	salt := make([]byte, saltLen)
-	_, err = f.Read(salt)
+	_, err = r.Read(salt)
 	if err != nil {
 		return errors.New(fmt.Sprintf("can't read salt: %s", err.Error()))
 	}
@@ -180,7 +157,7 @@ func (a *AES) DecryptFile(infile, outfile string) error {
 
 	var clear []byte
 	for {
-		n, err := f.Read(buf)
+		n, err := r.Read(buf)
 		if n == 0 && err == io.EOF {
 			break
 		}
@@ -191,7 +168,7 @@ func (a *AES) DecryptFile(infile, outfile string) error {
 		} else {
 			clear = a.Decrypt(buf)
 		}
-		_, err = out.Write(clear)
+		_, err = w.Write(clear)
 		if err != nil {
 			return err
 		}

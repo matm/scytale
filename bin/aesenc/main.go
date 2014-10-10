@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 
@@ -36,13 +37,24 @@ func main() {
 		log.Fatal("AES init:", err)
 	}
 
-	var action func(name, output string) error
+	in, err := os.Open(name)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer in.Close()
+	out, err := os.Create(*output)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer out.Close()
+
+	var action func(io.Reader, io.Writer) error
 	action = a.EncryptFile
 	if *decrypt {
 		action = a.DecryptFile
 	}
 
-	if err := action(name, *output); err != nil {
+	if err := action(in, out); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("Wrote to", *output)
