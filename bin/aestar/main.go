@@ -7,65 +7,65 @@ import (
 	"log"
 	"os"
 
+	"code.google.com/p/go.crypto/ssh/terminal"
 	"secret"
 )
 
+func perror(msg string) {
+	fmt.Fprintf(os.Stderr, "error: %s\n", msg)
+	os.Exit(1)
+}
+
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s -o output input password\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s -o output.tar filepattern\n", os.Args[0])
 		flag.PrintDefaults()
 	}
 	help := flag.Bool("h", false, "show help message")
+	output := flag.String("o", "", "output tar archive file")
 	flag.Parse()
 
 	if *help {
 		flag.Usage()
 		os.Exit(2)
 	}
-	/*
-		if len(flag.Args()) != 2 {
-			flag.Usage()
-			os.Exit(2)
-		}
-		if *output == "" {
-			log.Fatal("missing output file name (use -o)")
-		}
-		name := flag.Arg(0)
-		a, err := secret.NewAES(flag.Arg(1))
-		if err != nil {
-			log.Fatal("AES init:", err)
-		}
+	if len(flag.Args()) == 0 {
+		flag.Usage()
+		os.Exit(2)
+	}
+	if *output == "" {
+		log.Fatal("missing output file name (use -o)")
+	}
 
-		in, err := os.Open(name)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer in.Close()
-		out, err := os.Create(*output)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer out.Close()
+	fmt.Printf("Password: ")
+	pwd, err := terminal.ReadPassword(int(os.Stdout.Fd()))
+	if err != nil {
+		perror(err.Error())
+	}
+	password := string(pwd)
+	fmt.Println()
+	if password == "" {
+		perror("Empty password not allowed.")
+	}
+	fmt.Printf("Repeat: ")
+	pwd2, err := terminal.ReadPassword(int(os.Stdout.Fd()))
+	if err != nil {
+		perror(err.Error())
+	}
+	fmt.Println()
+	confirm := string(pwd2)
+	if password != confirm {
+		perror("Passwords mismatch.")
+	}
 
-		var action func(io.Reader, io.Writer) error
-		action = a.EncryptFile
-		if *decrypt {
-			action = a.DecryptFile
-		}
-
-		if err := action(in, out); err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println("Wrote to", *output)
-	*/
-	out, err := os.Create("out.tar")
+	out, err := os.Create(*output)
 	if err != nil {
 		log.Fatal(err)
 	}
 	tw := tar.NewWriter(out)
 	defer tw.Close()
 
-	a, err := secret.NewAES("passwd")
+	a, err := secret.NewAES(password)
 	if err != nil {
 		log.Fatal("AES init:", err)
 	}
@@ -96,4 +96,5 @@ func main() {
 		f.Close()
 		fmt.Println("OK")
 	}
+	fmt.Println("Wrote to", *output)
 }
