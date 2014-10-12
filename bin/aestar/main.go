@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 
@@ -16,27 +17,7 @@ func perror(msg string) {
 	os.Exit(1)
 }
 
-func main() {
-	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s -o output.tar filepattern\n", os.Args[0])
-		flag.PrintDefaults()
-	}
-	help := flag.Bool("h", false, "show help message")
-	output := flag.String("o", "", "output tar archive file")
-	flag.Parse()
-
-	if *help {
-		flag.Usage()
-		os.Exit(2)
-	}
-	if len(flag.Args()) == 0 {
-		flag.Usage()
-		os.Exit(2)
-	}
-	if *output == "" {
-		log.Fatal("missing output file name (use -o)")
-	}
-
+func getPassword(twice bool) string {
 	fmt.Printf("Password: ")
 	pwd, err := terminal.ReadPassword(int(os.Stdout.Fd()))
 	if err != nil {
@@ -46,6 +27,9 @@ func main() {
 	fmt.Println()
 	if password == "" {
 		perror("Empty password not allowed.")
+	}
+	if !twice {
+		return password
 	}
 	fmt.Printf("Repeat: ")
 	pwd2, err := terminal.ReadPassword(int(os.Stdout.Fd()))
@@ -57,44 +41,121 @@ func main() {
 	if password != confirm {
 		perror("Passwords mismatch.")
 	}
+	return password
+}
 
-	out, err := os.Create(*output)
+func createArchive(output, password string, files []string) error {
+	out, err := os.Create(output)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	tw := tar.NewWriter(out)
 	defer tw.Close()
 
 	a, err := secret.NewAES(password)
 	if err != nil {
-		log.Fatal("AES init:", err)
+		return err
 	}
 
-	for _, file := range flag.Args() {
-		fmt.Printf("Adding %s ... ", file)
+	for _, file := range files {
 		f, err := os.Open(file)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		info, err := f.Stat()
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		hdr, err := tar.FileInfoHeader(info, "")
 		//hdr.Name = fmt.Sprintf("%04d.crypt", j+1)
 		// Estimate length of encrypted file
 		hdr.Size = a.EncryptedFileLength(info)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		if err := tw.WriteHeader(hdr); err != nil {
-			log.Fatal(err)
+			return err
 		}
 		if err := a.EncryptFile(f, tw); err != nil {
-			log.Fatal(err)
+			return err
 		}
 		f.Close()
-		fmt.Println("OK")
+	}
+	return nil
+}
+
+func extractArchive(input, password string) error {
+	src, err := os.Open(input)
+	if err != nil {
+		return err
+	}
+	tr := tar.NewReader(src)
+
+	a, err := secret.NewAES(password)
+	if err != nil {
+		return err
+	}
+
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			// end of tar archive
+			break
+		}
+		if err != nil {
+			return err
+		}
+		f, err := os.Create(hdr.Name)
+		if err != nil {
+			return err
+		}
+		if err := a.DecryptFile(tr, f); err != nil {
+			f.Close()
+			return err
+		}
+		f.Close()
+		fmt.Println("extracted", hdr.Name)
+	}
+	return nil
+}
+
+func main() {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: %s [-o output.tar filepattern][-x archive.tar]\n", os.Args[0])
+		flag.PrintDefaults()
+	}
+	help := flag.Bool("h", false, "show help message")
+	output := flag.String("o", "", "output tar archive file")
+	extract := flag.Bool("x", false, "extract and decrypt files")
+	flag.Parse()
+
+	if *help {
+		flag.Usage()
+		os.Exit(2)
+	}
+	if len(flag.Args()) == 0 {
+		flag.Usage()
+		os.Exit(2)
+	}
+	if len(flag.Args()) == 1 {
+		// extraction
+		if !*extract {
+			flag.Usage()
+			os.Exit(2)
+		}
+		password := getPassword(false)
+		if err := extractArchive(flag.Arg(0), password); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+	if *output == "" {
+		log.Fatal("missing output file name (use -o)")
+	}
+
+	password := getPassword(true)
+	if err := createArchive(*output, password, flag.Args()); err != nil {
+		log.Fatal(err)
 	}
 	fmt.Println("Wrote to", *output)
 }
