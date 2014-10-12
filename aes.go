@@ -8,10 +8,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 
 	"code.google.com/p/go.crypto/pbkdf2"
 )
 
+// Advanced Encryption Standard
 type AES struct {
 	password  []byte
 	salt, key []byte
@@ -175,4 +177,15 @@ func (a *AES) DecryptFile(r io.Reader, w io.Writer) error {
 	}
 
 	return nil
+}
+
+// EncryptedFileLength returns the expected encrypted file length. This
+// information can be used to provide file size info to archive/tar for
+// example.
+func (a *AES) EncryptedFileLength(fi os.FileInfo) int64 {
+	padding := PKCS7Padding(int(fi.Size()), aes.BlockSize)
+	if len(padding) == aes.BlockSize {
+		padding = []byte{}
+	}
+	return int64(int(fi.Size()) + aes.BlockSize + saltLen + len(padding))
 }

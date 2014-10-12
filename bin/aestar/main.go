@@ -71,6 +71,7 @@ func main() {
 	}
 
 	for _, file := range flag.Args() {
+		fmt.Printf("Adding %s ... ", file)
 		f, err := os.Open(file)
 		if err != nil {
 			log.Fatal(err)
@@ -80,7 +81,9 @@ func main() {
 			log.Fatal(err)
 		}
 		hdr, err := tar.FileInfoHeader(info, "")
-		hdr.Size = hdr.Size + 32 + 16
+		//hdr.Name = fmt.Sprintf("%04d.crypt", j+1)
+		// Estimate length of encrypted file
+		hdr.Size = a.EncryptedFileLength(info)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -90,24 +93,7 @@ func main() {
 		if err := a.EncryptFile(f, tw); err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println("Wrote", info.Name())
+		f.Close()
+		fmt.Println("OK")
 	}
-
-	/*
-		// Open the tar archive for reading.
-		r := bytes.NewReader(buf.Bytes())
-		tr := tar.NewReader(r)
-
-		// Iterate through the files in the archive.
-		for {
-			_, err := tr.Next()
-			if err == io.EOF {
-				// end of tar archive
-				break
-			}
-			if err != nil {
-				log.Fatalln(err)
-			}
-		}
-	*/
 }
