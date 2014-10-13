@@ -2,7 +2,6 @@ package secret
 
 import (
 	"archive/tar"
-	"fmt"
 	"io"
 	"os"
 	"path"
@@ -57,6 +56,9 @@ func (a *Archive) Create(output string, files []string) error {
 }
 
 func (a *Archive) Extract(input, outputDir string) error {
+	if _, err := os.Stat(outputDir); err != nil {
+		return err
+	}
 	src, err := os.Open(input)
 	if err != nil {
 		return err
@@ -86,7 +88,6 @@ func (a *Archive) Extract(input, outputDir string) error {
 			return err
 		}
 		f.Close()
-		fmt.Println("extracted", hdr.Name)
 	}
 	return nil
 }
