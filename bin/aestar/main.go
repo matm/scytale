@@ -137,12 +137,7 @@ func main() {
 		flag.Usage()
 		os.Exit(2)
 	}
-	if len(flag.Args()) == 1 {
-		// extraction
-		if !*extract {
-			flag.Usage()
-			os.Exit(2)
-		}
+	if *extract {
 		password := getPassword(false)
 		if err := extractArchive(flag.Arg(0), password); err != nil {
 			log.Fatal(err)
