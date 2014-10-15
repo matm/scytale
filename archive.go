@@ -7,15 +7,15 @@ import (
 	"path"
 )
 
-type Archive struct {
+type TarArchive struct {
 	password string
 }
 
-func NewArchive(password string) *Archive {
-	return &Archive{password}
+func NewTarArchive(password string) *TarArchive {
+	return &TarArchive{password}
 }
 
-func (a *Archive) Create(output string, files []string) error {
+func (a *TarArchive) Create(output string, files []string) error {
 	out, err := os.Create(output)
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func (a *Archive) Create(output string, files []string) error {
 	return nil
 }
 
-func (a *Archive) Extract(input, outputDir string) error {
+func (a *TarArchive) Extract(input, outputDir string) error {
 	if _, err := os.Stat(outputDir); err != nil {
 		return err
 	}
