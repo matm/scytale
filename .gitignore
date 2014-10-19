@@ -2,4 +2,5 @@
 bin/crypto/crypto
 bin/aesenc/aesenc
 bin/aestar/aestar
+bin/aeszip/aeszip
 tags
