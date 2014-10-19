@@ -4,14 +4,22 @@ import (
 	"archive/zip"
 	"os"
 	"path"
+	"sync"
 )
 
 type ZipArchive struct {
-	password string
+	sync.Mutex
+	password  string
+	processed []string
+	fileset   []string
 }
 
 func NewZipArchive(password string) *ZipArchive {
-	return &ZipArchive{password}
+	return &ZipArchive{password: password}
+}
+
+func (a *ZipArchive) SetPassword(pwd string) {
+	a.password = pwd
 }
 
 func (a *ZipArchive) Create(output string, files []string) error {
