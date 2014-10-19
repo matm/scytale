@@ -37,7 +37,8 @@ func (a *ZipArchive) Create(output string, files []string) error {
 			f.Close()
 			return err
 		}
-		fw, err := tw.Create(info.Name())
+		hdr, err := zip.FileInfoHeader(info)
+		fw, err := tw.CreateHeader(hdr)
 		if err != nil {
 			f.Close()
 			return err
