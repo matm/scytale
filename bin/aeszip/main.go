@@ -11,6 +11,11 @@ import (
 
 const pwdMinLen = 4
 
+func walk(path string, info os.FileInfo, current, total int) error {
+	fmt.Printf("[%02d/%02d] %-70s\r", current, total, info.Name())
+	return nil
+}
+
 func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [-o output.zip filepattern][-x -o output_dir archive.zip]\n", os.Args[0])
@@ -52,8 +57,8 @@ func main() {
 		log.Fatal(err)
 	}
 	ar := secret.NewZipArchive(password)
-	if err := ar.Create(*output, flag.Args()); err != nil {
+	if err := ar.Create(*output, flag.Args(), walk); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Wrote to", *output)
+	fmt.Printf("\nWrote to %s\n", *output)
 }

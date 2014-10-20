@@ -8,6 +8,10 @@ import (
 	"secret"
 )
 
+func walk(path string, info os.FileInfo, current, total int) error {
+	return nil
+}
+
 type Magma struct {
 	sync.Mutex
 	zip *secret.ZipArchive
@@ -44,7 +48,7 @@ type CreateArchiveReply struct {
 
 func (s *Magma) CreateArchive(r *http.Request, args *CreateArchiveArgs, reply *ExitReply) error {
 	s.zip.SetPassword(args.Password)
-	if err := s.zip.Create(args.OutputName, args.Files); err != nil {
+	if err := s.zip.Create(args.OutputName, args.Files, walk); err != nil {
 		return err
 	}
 	return nil
