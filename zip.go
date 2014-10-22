@@ -2,6 +2,8 @@ package secret
 
 import (
 	"archive/zip"
+	"errors"
+	"fmt"
 	"os"
 	"path"
 	"sync"
@@ -103,7 +105,9 @@ func (a *ZipArchive) Create(output string, files []string, fn WalkFunc) error {
 	return nil
 }
 
-func (a *ZipArchive) Extract(input, outputDir string) error {
+// ExtractAll extracts all encrypted files from zip archive. The
+// resulting files are decrypted using the provided password.
+func (a *ZipArchive) ExtractAll(archive, outputDir string) error {
 	a.Lock()
 	a.status = Running
 	a.Unlock()
@@ -117,7 +121,7 @@ func (a *ZipArchive) Extract(input, outputDir string) error {
 	if _, err := os.Stat(outputDir); err != nil {
 		return err
 	}
-	tr, err := zip.OpenReader(input)
+	tr, err := zip.OpenReader(archive)
 	if err != nil {
 		return err
 	}
@@ -149,5 +153,57 @@ func (a *ZipArchive) Extract(input, outputDir string) error {
 			break
 		}
 	}
+	return nil
+}
+
+// ExtractAt extracts a single file at position pos from zip archive. The
+// resulting file is decrypted using the provided password.
+func (a *ZipArchive) ExtractAt(pos int, archive, outputDir string) error {
+	a.Lock()
+	a.status = Running
+	a.Unlock()
+
+	defer func() {
+		a.Lock()
+		a.status = Idle
+		a.Unlock()
+	}()
+
+	if _, err := os.Stat(outputDir); err != nil {
+		return err
+	}
+	tr, err := zip.OpenReader(archive)
+	if err != nil {
+		return err
+	}
+	defer tr.Close()
+
+	if pos > len(tr.File)-1 || pos < 0 {
+		return errors.New(fmt.Sprintf("position %d out of bounds (%d files in archive)", pos, len(tr.File)))
+	}
+
+	aes, err := NewAES(a.password)
+	if err != nil {
+		return err
+	}
+
+	at := tr.File[pos]
+	f, err := os.Create(path.Join(outputDir, at.Name))
+
+	if err != nil {
+		f.Close()
+		return err
+	}
+	rc, err := at.Open()
+	if err != nil {
+		return err
+	}
+	if err := aes.DecryptFile(rc, f); err != nil {
+		f.Close()
+		return err
+	}
+	f.Close()
+	rc.Close()
+
 	return nil
 }

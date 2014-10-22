@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"sync"
@@ -9,6 +11,7 @@ import (
 )
 
 func walk(path string, info os.FileInfo, current, total int) error {
+	fmt.Println(current, path)
 	return nil
 }
 
@@ -31,8 +34,8 @@ type ExitReply struct {
 }
 
 func (s *Magma) Exit(r *http.Request, args *NoArgs, reply *ExitReply) error {
-	// TODO: cleanup things
 	defer os.Exit(0)
+	s.zip.Cancel()
 	return nil
 }
 
@@ -47,6 +50,15 @@ type CreateArchiveReply struct {
 }
 
 func (s *Magma) CreateArchive(r *http.Request, args *CreateArchiveArgs, reply *ExitReply) error {
+	if args.Password == "" {
+		return errors.New("empty passwor")
+	}
+	if args.OutputName == "" {
+		return errors.New("missing output name")
+	}
+	if len(args.Files) == 0 {
+		return errors.New("empty file set")
+	}
 	s.zip.SetPassword(args.Password)
 	if err := s.zip.Create(args.OutputName, args.Files, walk); err != nil {
 		return err

@@ -43,7 +43,7 @@ func main() {
 		if *output == "" {
 			*output = "."
 		}
-		if err := ar.Extract(flag.Arg(0), *output); err != nil {
+		if err := ar.ExtractAll(flag.Arg(0), *output); err != nil {
 			log.Fatal(err)
 		}
 		return
