@@ -18,11 +18,16 @@ func main() {
 	help := flag.Bool("h", false, "show help message")
 	decrypt := flag.Bool("d", false, "decrypt file")
 	output := flag.String("o", "", "output file name")
+	version := flag.Bool("version", false, "show version")
 	flag.Parse()
 
 	if *help {
 		flag.Usage()
 		os.Exit(2)
+	}
+	if *version {
+		fmt.Println("version:", appVersion)
+		os.Exit(0)
 	}
 	if len(flag.Args()) != 2 {
 		flag.Usage()
