@@ -2,7 +2,7 @@ package main
 
 import (
 	"errors"
-	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"sync"
@@ -11,7 +11,7 @@ import (
 )
 
 func walk(path string, info os.FileInfo, current, total int) error {
-	fmt.Println(current, path)
+	log.Printf("Adding %s [%d/%d]\n", path, current, total)
 	return nil
 }
 
@@ -20,10 +20,11 @@ type Magma struct {
 	zip *secret.ZipArchive
 }
 
+const emptyPassword = ""
+
 func NewMagma() *Magma {
 	m := new(Magma)
-	// FIXME: empty password to be set later
-	m.zip = secret.NewZipArchive("")
+	m.zip = secret.NewZipArchive(emptyPassword)
 	return m
 }
 
@@ -33,9 +34,12 @@ type ExitReply struct {
 	Message string
 }
 
+// Exit terminates the process.
 func (s *Magma) Exit(r *http.Request, args *NoArgs, reply *ExitReply) error {
 	defer os.Exit(0)
+	// Stops any processing
 	s.zip.Cancel()
+	log.Println("Exiting...")
 	return nil
 }
 
@@ -51,7 +55,7 @@ type CreateArchiveReply struct {
 
 func (s *Magma) CreateArchive(r *http.Request, args *CreateArchiveArgs, reply *ExitReply) error {
 	if args.Password == "" {
-		return errors.New("empty passwor")
+		return errors.New("empty password")
 	}
 	if args.OutputName == "" {
 		return errors.New("missing output name")

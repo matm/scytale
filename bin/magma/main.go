@@ -10,16 +10,18 @@ import (
 )
 
 const (
-	port = "localhost:8080"
+	port    = "localhost:8080"
+	rootUrl = "/api"
 )
 
 func main() {
 	s := rpc.NewServer()
 	s.RegisterCodec(json.NewCodec(), "application/json")
 	s.RegisterService(NewMagma(), "")
-	http.Handle("/rpc", s)
+	http.Handle(rootUrl, s)
 
 	log.Printf("Listening on %v ...", port)
+	log.Println("Send requests to", rootUrl)
 	log.Fatal(http.ListenAndServe(port, nil))
 
 	/*
