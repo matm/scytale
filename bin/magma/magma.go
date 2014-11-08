@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -67,5 +68,53 @@ func (s *Magma) CreateArchive(r *http.Request, args *CreateArchiveArgs, reply *E
 	if err := s.zip.Create(args.OutputName, args.Files, walk); err != nil {
 		return err
 	}
+	reply.Message = fmt.Sprintf("Archive %s created successfully.", args.OutputName)
+	return nil
+}
+
+type ExtractAllArgs struct {
+	Archive   string
+	Password  string
+	OutputDir string
+}
+
+func (s *Magma) ExtractAll(r *http.Request, args *ExtractAllArgs, reply *ExitReply) error {
+	if args.Password == "" {
+		return errors.New("empty password")
+	}
+	if args.Archive == "" {
+		return errors.New("missing archive name")
+	}
+	if args.OutputDir == "" {
+		return errors.New("missing output directory")
+	}
+	s.zip.SetPassword(args.Password)
+	if err := s.zip.ExtractAll(args.Archive, args.OutputDir); err != nil {
+		return err
+	}
+	reply.Message = fmt.Sprintf("All files extracted.")
+	return nil
+}
+
+type ExtractAtArgs struct {
+	ExtractAllArgs
+	Pos int
+}
+
+func (s *Magma) ExtractAt(r *http.Request, args *ExtractAtArgs, reply *ExitReply) error {
+	if args.Password == "" {
+		return errors.New("empty password")
+	}
+	if args.Archive == "" {
+		return errors.New("missing archive name")
+	}
+	if args.OutputDir == "" {
+		return errors.New("missing output directory")
+	}
+	s.zip.SetPassword(args.Password)
+	if err := s.zip.ExtractAt(args.Pos, args.Archive, args.OutputDir); err != nil {
+		return err
+	}
+	reply.Message = fmt.Sprintf("File at pos %d extracted.", args.Pos)
 	return nil
 }
