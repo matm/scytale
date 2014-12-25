@@ -70,7 +70,7 @@ where options are
 		total = 0
 		for _, f := range r.File {
 			info := f.FileInfo()
-			fmt.Printf("  %d  %s   %s\n", info.Size(),
+			fmt.Printf("%9d  %s   %s\n", info.Size(),
 				info.ModTime().Format("2006-01-02 15:04"), f.Name)
 			total += info.Size()
 		}
