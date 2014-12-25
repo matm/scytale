@@ -20,8 +20,8 @@ func walk(path string, info os.FileInfo, current, total int) error {
 func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, `Usage: %s
-  [-o output.zip filepattern]
-  [-x [-o output_dir] [-n pos] archive.zip]
+  [-o [-p password] output.zip filepattern]
+  [-x [-p password] [-o output_dir] [-n pos] archive.zip]
   [-l archive.zip]
   [-s archive.zip]
 
@@ -35,6 +35,7 @@ where options are
 	list := flag.Bool("l", false, "list files in archive")
 	stats := flag.Bool("s", false, "archive stats")
 	pos := flag.Int("n", -1, "extract file at pos in archive")
+	password := flag.String("p", "", "password to use (UNSECURE)")
 	flag.Parse()
 
 	if *help {
@@ -78,11 +79,14 @@ where options are
 		return
 	}
 	if *extract {
-		password, err := secret.ReadPassword(pwdMinLen, false)
-		if err != nil {
-			log.Fatal(err)
+		if *password == "" {
+			pwd, err := secret.ReadPassword(pwdMinLen, false)
+			if err != nil {
+				log.Fatal(err)
+			}
+			*password = pwd
 		}
-		ar := secret.NewZipArchive(password)
+		ar := secret.NewZipArchive(*password)
 		if *output == "" {
 			*output = "."
 		}
@@ -102,11 +106,14 @@ where options are
 		log.Fatal("missing output file name (use -o)")
 	}
 
-	password, err := secret.ReadPassword(pwdMinLen, true)
-	if err != nil {
-		log.Fatal(err)
+	if *password == "" {
+		pwd, err := secret.ReadPassword(pwdMinLen, false)
+		if err != nil {
+			log.Fatal(err)
+		}
+		*password = pwd
 	}
-	ar := secret.NewZipArchive(password)
+	ar := secret.NewZipArchive(*password)
 	if err := ar.Create(*output, flag.Args(), walk); err != nil {
 		log.Fatal(err)
 	}
