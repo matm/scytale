@@ -75,7 +75,7 @@ where options are
 			total += info.Size()
 		}
 		fmt.Println("---------  		      -------")
-		fmt.Printf(" %d  		      %d files\n", total, len(r.File))
+		fmt.Printf("%9d  		      %d files\n", total, len(r.File))
 		return
 	}
 	if *extract {
