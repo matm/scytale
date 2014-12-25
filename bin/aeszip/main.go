@@ -19,13 +19,21 @@ func walk(path string, info os.FileInfo, current, total int) error {
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s [-o output.zip filepattern][-x -o output_dir archive.zip][-l archive.zip]\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, `Usage: %s
+  [-o output.zip filepattern]
+  [-x -o output_dir archive.zip]
+  [-l archive.zip]
+  [-s archive.zip]
+
+where options are
+`, os.Args[0])
 		flag.PrintDefaults()
 	}
 	help := flag.Bool("h", false, "show help message")
 	output := flag.String("o", "", "output zip archive file")
 	extract := flag.Bool("x", false, "extract and decrypt files")
 	list := flag.Bool("l", false, "list files in archive")
+	stats := flag.Bool("s", false, "archive stats")
 	flag.Parse()
 
 	if *help {
@@ -35,6 +43,15 @@ func main() {
 	if len(flag.Args()) == 0 {
 		flag.Usage()
 		os.Exit(2)
+	}
+	if *stats {
+		r, err := zip.OpenReader(flag.Arg(0))
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer r.Close()
+		fmt.Printf("%d\n", len(r.File))
+		return
 	}
 	if *list {
 		r, err := zip.OpenReader(flag.Arg(0))
