@@ -21,7 +21,7 @@ func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, `Usage: %s
   [-o output.zip filepattern]
-  [-x -o output_dir archive.zip]
+  [-x [-o output_dir] [-n pos] archive.zip]
   [-l archive.zip]
   [-s archive.zip]
 
@@ -34,6 +34,7 @@ where options are
 	extract := flag.Bool("x", false, "extract and decrypt files")
 	list := flag.Bool("l", false, "list files in archive")
 	stats := flag.Bool("s", false, "archive stats")
+	pos := flag.Int("n", -1, "extract file at pos in archive")
 	flag.Parse()
 
 	if *help {
@@ -85,8 +86,15 @@ where options are
 		if *output == "" {
 			*output = "."
 		}
-		if err := ar.ExtractAll(flag.Arg(0), *output); err != nil {
-			log.Fatal(err)
+		if *pos >= 0 {
+			// Extract at pos only
+			if err := ar.ExtractAt(*pos, flag.Arg(0), *output); err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			if err := ar.ExtractAll(flag.Arg(0), *output); err != nil {
+				log.Fatal(err)
+			}
 		}
 		return
 	}
