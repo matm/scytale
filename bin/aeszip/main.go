@@ -20,7 +20,7 @@ func walk(path string, info os.FileInfo, current, total int) error {
 func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, `Usage: %s
-  [-o [-p password] output.zip filepattern]
+  [[-p password] -o output.zip filepattern]
   [-x [-p password] [-o output_dir] [-n pos] archive.zip]
   [-l archive.zip]
   [-s archive.zip]
