@@ -13,7 +13,7 @@ import (
 const pwdMinLen = 4
 
 // App version
-const VERSION = "1.0"
+const VERSION = "1.1"
 
 func walk(path string, info os.FileInfo, current, total int) error {
 	fmt.Printf("[%02d/%02d] %-70s\r", current, total, info.Name())
@@ -26,7 +26,7 @@ func main() {
   [[-p password] -o output.zip filepattern]
   [-x [-p password] [-o output_dir] [-n pos] archive.zip]
   [-l archive.zip]
-  [-s archive.zip]
+  [-s [-n pos] archive.zip]
 
 where options are
 `, os.Args[0])
@@ -60,6 +60,14 @@ where options are
 			log.Fatal(err)
 		}
 		defer r.Close()
+		if *pos >= 0 {
+			if *pos >= len(r.File) {
+				log.Fatal("position out of bounds")
+			}
+			f := r.File[*pos]
+			fmt.Println(f.FileInfo().Size(), f.FileInfo().Name())
+			return
+		}
 		fmt.Printf("%d\n", len(r.File))
 		return
 	}
