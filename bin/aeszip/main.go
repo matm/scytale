@@ -12,6 +12,9 @@ import (
 
 const pwdMinLen = 4
 
+// App version
+const VERSION = "1.0"
+
 func walk(path string, info os.FileInfo, current, total int) error {
 	fmt.Printf("[%02d/%02d] %-70s\r", current, total, info.Name())
 	return nil
@@ -36,11 +39,16 @@ where options are
 	stats := flag.Bool("s", false, "archive stats")
 	pos := flag.Int("n", -1, "extract file at pos in archive")
 	password := flag.String("p", "", "password to use (UNSECURE)")
+	version := flag.Bool("v", false, "show version")
 	flag.Parse()
 
 	if *help {
 		flag.Usage()
 		os.Exit(2)
+	}
+	if *version {
+		fmt.Println(VERSION)
+		return
 	}
 	if len(flag.Args()) == 0 {
 		flag.Usage()
