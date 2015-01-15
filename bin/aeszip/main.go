@@ -42,6 +42,7 @@ where options are
 	password := flag.String("p", "", "password to use (UNSECURE)")
 	version := flag.Bool("v", false, "show version")
 	jsonFormat := flag.Bool("j", false, "JSON output")
+	random := flag.Bool("r", false, "rename files with their md5 checksum")
 	flag.Parse()
 
 	if *help {
@@ -163,7 +164,7 @@ where options are
 		*password = pwd
 	}
 	ar := secret.NewZipArchive(*password)
-	if err := ar.Create(*output, flag.Args(), walk); err != nil {
+	if err := ar.Create(*output, flag.Args(), walk, *random); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Printf("\nWrote to %s\n", *output)

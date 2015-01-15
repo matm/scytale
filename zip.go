@@ -2,10 +2,13 @@ package secret
 
 import (
 	"archive/zip"
+	"crypto/md5"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"sync"
 )
 
@@ -49,7 +52,10 @@ func (a *ZipArchive) Cancel() {
 	a.status = Idle
 }
 
-func (a *ZipArchive) Create(output string, files []string, fn WalkFunc) error {
+// Create creates a new ZIP output archive given a list of input files. fn() is
+// called just after a file has been encrypted and added to the archive. Set random
+// to true to rename file with their md5 checksum.
+func (a *ZipArchive) Create(output string, files []string, fn WalkFunc, random bool) error {
 	a.Lock()
 	a.status = Running
 	a.Unlock()
@@ -83,7 +89,13 @@ func (a *ZipArchive) Create(output string, files []string, fn WalkFunc) error {
 			f.Close()
 			return err
 		}
+		info.IsDir()
 		hdr, err := zip.FileInfoHeader(info)
+		if random {
+			m := md5.New()
+			io.WriteString(m, hdr.Name)
+			hdr.Name = fmt.Sprintf("%x%s", m.Sum(nil), filepath.Ext(hdr.Name))
+		}
 		fw, err := tw.CreateHeader(hdr)
 		if err != nil {
 			f.Close()
