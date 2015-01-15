@@ -24,10 +24,10 @@ func walk(path string, info os.FileInfo, current, total int) error {
 func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, `Usage: %s
-  [[-p password] -o output.zip filepattern]
+  [[-r] [-p password] -o output.zip filepattern]
   [-x [-p password] [-o output_dir] [-n pos] archive.zip]
-  [-l archive.zip]
-  [-s [-n pos] archive.zip]
+  [[-j] -l archive.zip]
+  [[-j] -s [-n pos] archive.zip]
 
 where options are
 `, os.Args[0])
