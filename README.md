@@ -16,9 +16,9 @@ Use `go get` to install the package:
 ## Tools
 
 The `bin/aesenc` and `bin/aeszip` CLI tools allow file encryption using
-[AES](http://en.wikipedia.org/wiki/Advanced_Encryption_Standard)-256,
+[AES](http://en.wikipedia.org/wiki/Advanced_Encryption_Standard)-256 operating in [CBC mode](http://en.wikipedia.org/wiki/Block_cipher_mode_of_operation),
 [password-based encryption](http://en.wikipedia.org/wiki/Password-based_cryptography) (PBE)
-and the [PBKDF2](http://en.wikipedia.org/wiki/PBKDF2) password-based key derivation function.
+and a [PBKDF2](http://en.wikipedia.org/wiki/PBKDF2) password-based key derivation function.
 
 The former can be used to encrypt/decrypt a single file:
 
