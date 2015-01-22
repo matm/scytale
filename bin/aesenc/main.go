@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"secret"
+	"scytale"
 )
 
 func main() {
@@ -37,7 +37,7 @@ func main() {
 		log.Fatal("missing output file name (use -o)")
 	}
 	name := flag.Arg(0)
-	a, err := secret.NewAES(flag.Arg(1))
+	a, err := scytale.NewAES(flag.Arg(1))
 	if err != nil {
 		log.Fatal("AES init:", err)
 	}

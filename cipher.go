@@ -1,4 +1,4 @@
-package secret
+package scytale
 
 type Cipher interface {
 	Encrypt(key, clear []byte) []byte

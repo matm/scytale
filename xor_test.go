@@ -1,4 +1,4 @@
-package secret
+package scytale
 
 import (
 	"testing"

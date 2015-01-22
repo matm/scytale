@@ -6,7 +6,7 @@ import (
 
 	"github.com/gorilla/rpc/v2"
 	"github.com/gorilla/rpc/v2/json"
-	_ "secret"
+	_ "scytale"
 )
 
 const (

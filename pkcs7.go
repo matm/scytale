@@ -1,4 +1,4 @@
-package secret
+package scytale
 
 // PKCS#7 data padding
 func PKCS7Padding(clearTextLen, blockSize int) []byte {

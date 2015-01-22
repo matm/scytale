@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 
-	"secret"
+	"scytale"
 )
 
 const pwdMinLen = 4
@@ -130,13 +130,13 @@ where options are
 	}
 	if *extract {
 		if *password == "" {
-			pwd, err := secret.ReadPassword(pwdMinLen, false)
+			pwd, err := scytale.ReadPassword(pwdMinLen, false)
 			if err != nil {
 				log.Fatal(err)
 			}
 			*password = pwd
 		}
-		ar := secret.NewZipArchive(*password)
+		ar := scytale.NewZipArchive(*password)
 		if *output == "" {
 			*output = "."
 		}
@@ -157,13 +157,13 @@ where options are
 	}
 
 	if *password == "" {
-		pwd, err := secret.ReadPassword(pwdMinLen, false)
+		pwd, err := scytale.ReadPassword(pwdMinLen, false)
 		if err != nil {
 			log.Fatal(err)
 		}
 		*password = pwd
 	}
-	ar := secret.NewZipArchive(*password)
+	ar := scytale.NewZipArchive(*password)
 	if err := ar.Create(*output, flag.Args(), walk, *random); err != nil {
 		log.Fatal(err)
 	}

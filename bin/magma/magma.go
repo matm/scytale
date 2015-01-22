@@ -8,7 +8,7 @@ import (
 	"os"
 	"sync"
 
-	"secret"
+	"scytale"
 )
 
 func walk(path string, info os.FileInfo, current, total int) error {
@@ -18,14 +18,14 @@ func walk(path string, info os.FileInfo, current, total int) error {
 
 type Magma struct {
 	sync.Mutex
-	zip *secret.ZipArchive
+	zip *scytale.ZipArchive
 }
 
 const emptyPassword = ""
 
 func NewMagma() *Magma {
 	m := new(Magma)
-	m.zip = secret.NewZipArchive(emptyPassword)
+	m.zip = scytale.NewZipArchive(emptyPassword)
 	return m
 }
 

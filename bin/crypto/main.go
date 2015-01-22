@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"secret"
+	"scytale"
 )
 
 func main() {
@@ -16,7 +16,7 @@ func main() {
 	password := strings.ToUpper(os.Args[1])
 	clear := strings.ToUpper(os.Args[2])
 
-	v := secret.NewVigenere()
+	v := scytale.NewVigenere()
 
 	fmt.Println("CLEAR ", clear)
 
@@ -40,7 +40,7 @@ func main() {
 	fmt.Println("CLEAR ", string(plain))
 
 	fmt.Print("\nXOR cipher\n")
-	x := secret.NewXor()
+	x := scytale.NewXor()
 	a := []byte{1, 2, 3, 5, 6, 7}
 	k := []byte{212, 16, 24, 32, 68, 44}
 	fmt.Println("CLEAR ", a)

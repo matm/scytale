@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"secret"
+	"scytale"
 )
 
 const pwdMinLen = 4
@@ -30,11 +30,11 @@ func main() {
 		os.Exit(2)
 	}
 	if *extract {
-		password, err := secret.ReadPassword(pwdMinLen, false)
+		password, err := scytale.ReadPassword(pwdMinLen, false)
 		if err != nil {
 			log.Fatal(err)
 		}
-		ar := secret.NewTarArchive(password)
+		ar := scytale.NewTarArchive(password)
 		if *output == "" {
 			*output = "."
 		}
@@ -47,11 +47,11 @@ func main() {
 		log.Fatal("missing output file name (use -o)")
 	}
 
-	password, err := secret.ReadPassword(pwdMinLen, true)
+	password, err := scytale.ReadPassword(pwdMinLen, true)
 	if err != nil {
 		log.Fatal(err)
 	}
-	ar := secret.NewTarArchive(password)
+	ar := scytale.NewTarArchive(password)
 	if err := ar.Create(*output, flag.Args()); err != nil {
 		log.Fatal(err)
 	}
