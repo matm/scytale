@@ -10,6 +10,9 @@ import (
 	"github.com/matm/scytale"
 )
 
+// App version
+const appVersion = "1.0"
+
 func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s -o output input password\n", os.Args[0])
@@ -18,7 +21,7 @@ func main() {
 	help := flag.Bool("h", false, "show help message")
 	decrypt := flag.Bool("d", false, "decrypt file")
 	output := flag.String("o", "", "output file name")
-	version := flag.Bool("version", false, "show version")
+	version := flag.Bool("v", false, "show version")
 	flag.Parse()
 
 	if *help {
