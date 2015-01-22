@@ -32,7 +32,7 @@ file:
     $ go install github.com/matm/scytale/bin/aeszip
     $ aeszip -o secure.zip *.pdf
 
-Both `aeszip -l` or `unzip -l` can be used to list the content of the archive. All files within
+Both `aeszip -l` and `unzip -l` can be used to list the content of the archive. All files within
 the archive can be decrypted and extracted with
 
     $ aeszip -x -o . secure.zip
