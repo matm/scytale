@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 
-	"scytale"
+	"github.com/matm/scytale"
 )
 
 const pwdMinLen = 4

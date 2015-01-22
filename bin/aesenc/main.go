@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"scytale"
+	"github.com/matm/scytale"
 )
 
 func main() {

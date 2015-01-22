@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"scytale"
+	"github.com/matm/scytale"
 )
 
 func main() {
