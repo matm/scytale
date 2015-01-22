@@ -10,12 +10,14 @@ import (
 	"github.com/matm/scytale"
 )
 
+const pwdMinLen = 4
+
 // App version
 const appVersion = "1.0"
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s -o output input password\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s -o output input\n", os.Args[0])
 		flag.PrintDefaults()
 	}
 	help := flag.Bool("h", false, "show help message")
@@ -32,15 +34,24 @@ func main() {
 		fmt.Println("version:", appVersion)
 		os.Exit(0)
 	}
-	if len(flag.Args()) != 2 {
+	if len(flag.Args()) != 1 {
 		flag.Usage()
 		os.Exit(2)
 	}
 	if *output == "" {
 		log.Fatal("missing output file name (use -o)")
 	}
+	// Read password twice
+	twice := true
+	if *decrypt {
+		twice = false
+	}
+	pwd, err := scytale.ReadPassword(pwdMinLen, twice)
+	if err != nil {
+		log.Fatal(err)
+	}
 	name := flag.Arg(0)
-	a, err := scytale.NewAES(flag.Arg(1))
+	a, err := scytale.NewAES(pwd)
 	if err != nil {
 		log.Fatal("AES init:", err)
 	}
