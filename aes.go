@@ -94,7 +94,9 @@ func (a *AES) Decrypt(ciphertext []byte) []byte {
 // RemovePadding removes extra padding for plain text.
 func (a *AES) RemovePadding(clear []byte) []byte {
 	cnt := clear[len(clear)-1]
-	clear = clear[:len(clear)-int(cnt)]
+	if len(clear) > int(cnt) {
+		clear = clear[:len(clear)-int(cnt)]
+	}
 	return clear
 }
 
