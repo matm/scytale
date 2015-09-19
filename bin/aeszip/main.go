@@ -51,6 +51,7 @@ where options are
 	}
 	if *version {
 		fmt.Println(VERSION)
+		fmt.Println("Scytale library", scytale.Version)
 		return
 	}
 	if len(flag.Args()) == 0 {
