@@ -11,7 +11,7 @@ Most of the credits goes to the wonderful [go.crypto](https://code.google.com/p/
 
 Use `go get` to install the package:
 
-    $ go get github.com/matm/scytale
+    $ go get gopkg.in/matm/scytale.v1
 
 ## Tools
 
@@ -22,14 +22,14 @@ and a [PBKDF2](http://en.wikipedia.org/wiki/PBKDF2) password-based key derivatio
 
 The former can be used to encrypt/decrypt a single file:
 
-    $ go install github.com/matm/scytale/bin/aesenc
+    $ go install gopkg.in/matm/scytale.v1/bin/aesenc
     $ aesenc -o out.enc myfile.pdf
     $ aesenc -o myfile.pdf -d out.enc
 
 The latter encrypts a bunch of files into a standard [ZIP](http://en.wikipedia.org/wiki/Zip_%28file_format%29)
 file:
 
-    $ go install github.com/matm/scytale/bin/aeszip
+    $ go install gopkg.in/matm/scytale.v1/bin/aeszip
     $ aeszip -o secure.zip *.pdf
 
 Both `aeszip -l` and `unzip -l` can be used to list the content of the archive. All files within
