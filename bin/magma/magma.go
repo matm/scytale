@@ -8,7 +8,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/matm/scytale"
+	"gopkg.in/matm/scytale.v1"
 )
 
 func walk(path string, info os.FileInfo, current, total int) error {

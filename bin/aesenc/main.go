@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/matm/scytale"
+	"gopkg.in/matm/scytale.v1"
 )
 
 const pwdMinLen = 4

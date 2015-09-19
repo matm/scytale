@@ -6,7 +6,8 @@ import (
 
 	"github.com/gorilla/rpc/v2"
 	"github.com/gorilla/rpc/v2/json"
-	_ "github.com/matm/scytale"
+
+	_ "gopkg.in/matm/scytale.v1"
 )
 
 const (
